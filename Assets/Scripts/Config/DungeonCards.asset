@@ -1,0 +1,75 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfbc26e99b55cf74d9ef971849238d15, type: 3}
+  m_Name: DungeonCards
+  m_EditorClassIdentifier: 
+  cards:
+  - id: 10
+    displayName: Goblin
+    description: 
+    icon: {fileID: 21300000, guid: fb4c5dec52f42d44083084167e3990eb, type: 3}
+    background: {fileID: 21300000, guid: 2ecc37dc4e9bdc840ac01174c698e109, type: 3}
+    cardType: 1
+    tag: 
+    typicalGroupSize: 0
+    isInstantEffect: 0
+    spawnWeight: 0
+  - id: 11
+    displayName: Skeleton
+    description: 
+    icon: {fileID: 21300000, guid: 012c06dfceb8fe049b0671b17cea2428, type: 3}
+    background: {fileID: 21300000, guid: 2ecc37dc4e9bdc840ac01174c698e109, type: 3}
+    cardType: 2
+    tag: 
+    typicalGroupSize: 0
+    isInstantEffect: 0
+    spawnWeight: 0
+  - id: 12
+    displayName: Spirit
+    description: 
+    icon: {fileID: 21300000, guid: 2e30b34bba4a87e49942f46ceb162bd3, type: 3}
+    background: {fileID: 21300000, guid: 2ecc37dc4e9bdc840ac01174c698e109, type: 3}
+    cardType: 3
+    tag: 
+    typicalGroupSize: 0
+    isInstantEffect: 0
+    spawnWeight: 0
+  - id: 13
+    displayName: Dragon
+    description: 
+    icon: {fileID: 21300000, guid: 7e32f61c55043474e848bd46af7f6d8b, type: 3}
+    background: {fileID: 21300000, guid: 2ecc37dc4e9bdc840ac01174c698e109, type: 3}
+    cardType: 4
+    tag: 
+    typicalGroupSize: 0
+    isInstantEffect: 0
+    spawnWeight: 0
+  - id: 14
+    displayName: Chest
+    description: 
+    icon: {fileID: 21300000, guid: 8e04c61e8c0d45649b17a3de55f325f4, type: 3}
+    background: {fileID: 21300000, guid: 2ecc37dc4e9bdc840ac01174c698e109, type: 3}
+    cardType: 5
+    tag: 
+    typicalGroupSize: 0
+    isInstantEffect: 0
+    spawnWeight: 0
+  - id: 14
+    displayName: Chest
+    description: 
+    icon: {fileID: 21300000, guid: 8e04c61e8c0d45649b17a3de55f325f4, type: 3}
+    background: {fileID: 21300000, guid: 2ecc37dc4e9bdc840ac01174c698e109, type: 3}
+    cardType: 5
+    tag: 
+    typicalGroupSize: 0
+    isInstantEffect: 0
+    spawnWeight: 0
