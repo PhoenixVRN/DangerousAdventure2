@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 public class CardInteraction : MonoBehaviour, IPointerClickHandler
 {
 	public static System.Action<CardInteraction> CardClicked;
+	public static System.Action<CardDefinition, bool> AdventurerSelected;
 	[SerializeField] private float scaleMultiplier = 1.2f;
 	[SerializeField] private float tweenDuration = 0.12f;
 
@@ -63,6 +64,10 @@ public class CardInteraction : MonoBehaviour, IPointerClickHandler
 			_currentlySelected = null;
 		Vector3 targetScale = _selected ? _baseScale * scaleMultiplier : _baseScale;
 		StartTweenScale(targetScale);
+		if (_definition != null && _definition.kind == CardKind.Adventurer)
+		{
+			AdventurerSelected?.Invoke(_definition, _selected);
+		}
 	}
 
 	public void ForceDeselect(bool animate)
