@@ -24,6 +24,36 @@ public class Graveyard : MonoBehaviour
 			}
 		}
 	}
+
+	public bool TryPopLast(out string id)
+	{
+		id = null;
+		if (adventurerIds == null || adventurerIds.Count == 0)
+			return false;
+		int last = adventurerIds.Count - 1;
+		id = adventurerIds[last];
+		adventurerIds.RemoveAt(last);
+		return !string.IsNullOrEmpty(id);
+	}
+
+	public bool TryPopByClass(AdventurerClass adventurerClass, AdventurerCardsConfig config, out string id)
+	{
+		id = null;
+		if (adventurerIds == null || adventurerIds.Count == 0 || config == null)
+			return false;
+		for (int i = adventurerIds.Count - 1; i >= 0; i--)
+		{
+			var candidateId = adventurerIds[i];
+			var entry = config.GetByIdOrNull(candidateId);
+			if (entry != null && entry.adventurerClass == adventurerClass)
+			{
+				adventurerIds.RemoveAt(i);
+				id = candidateId;
+				return true;
+			}
+		}
+		return false;
+	}
 }
 
 

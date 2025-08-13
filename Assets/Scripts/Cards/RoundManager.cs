@@ -41,9 +41,28 @@ public class RoundManager : MonoBehaviour
                 // есть обычные враги — играем этот раунд
                 break;
             }
-            // если есть сундуки — остаёмся, их можно открыть
+            // если есть сундуки и нет обычных врагов — даём выбор (кнопка Next Round)
             if (HasAnyChests())
             {
+                roundCleared = true;
+                SetNextRoundButton(true);
+                break;
+            }
+            // Спец-правило для 1-го раунда: если выпали только драконы (и нет обычных врагов/сундуков), даём кнопку Next Round
+            if (CurrentRound == 1 && HasAnyDragons())
+            {
+                roundCleared = true;
+                SetNextRoundButton(true);
+                break;
+            }
+            // если остались только поушены —
+            // • в любом раунде при ровно 1 поушене — даём кнопку
+            // • в 1-м раунде при >=1 поушене — тоже даём кнопку
+            int potionsOnly = PotionsOnlyCount();
+            if ((CurrentRound == 1 && potionsOnly >= 1) || potionsOnly == 1)
+            {
+                roundCleared = true;
+                SetNextRoundButton(true);
                 break;
             }
             // если только драконы или никого — следующий раунд
@@ -56,14 +75,35 @@ public class RoundManager : MonoBehaviour
 		// Проверяем: остались ли враги (кроме драконов и сундуков)
 		if (combat == null) return;
 		var cleared = !HasAnyActiveEnemies();
-		if (cleared)
-		{
-			if (!roundCleared)
-			{
-				roundCleared = true;
-				SetNextRoundButton(true);
-			}
-		}
+        if (cleared)
+        {
+            if (!roundCleared)
+            {
+                roundCleared = true;
+                SetNextRoundButton(true);
+            }
+        }
+        else
+        {
+            int potionsOnly = PotionsOnlyCount();
+            if ((CurrentRound == 1 && potionsOnly >= 1) || potionsOnly == 1)
+            {
+                if (!roundCleared)
+                {
+                    roundCleared = true;
+                    SetNextRoundButton(true);
+                }
+            }
+            else if (HasAnyChests())
+            {
+                // Разрешаем переход при наличии только сундуков/драконов
+                if (!roundCleared)
+                {
+                    roundCleared = true;
+                    SetNextRoundButton(true);
+                }
+            }
+        }
 	}
 
 	private bool HasAnyActiveEnemies()
@@ -98,6 +138,13 @@ public class RoundManager : MonoBehaviour
         return false;
     }
 
+    private bool HasAnyDragons()
+    {
+        var field = typeof(CardDealer).GetField("dragonParent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var dragonParent = field != null ? (Transform)field.GetValue(dealer) : null;
+        return dragonParent != null && dragonParent.childCount > 0;
+    }
+
 	private void RefreshUI()
 	{
 		if (roundText != null)
@@ -105,6 +152,25 @@ public class RoundManager : MonoBehaviour
 			roundText.text = CurrentRound.ToString();
 		}
 	}
+
+    private int PotionsOnlyCount()
+    {
+        var parentField = typeof(CombatSystem).GetField("dungeonParent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var parent = parentField != null ? (Transform)parentField.GetValue(combat) : null;
+        if (parent == null) return 0;
+        int potions = 0;
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            var def = parent.GetChild(i).GetComponent<CardDefinition>();
+            if (def == null || def.dungeonData == null) continue;
+            var t = def.dungeonData.cardType;
+            if (t == DungeonCardType.Potion)
+                potions++;
+            else if (t != DungeonCardType.Dragon)
+                return 0; // найден сундук или обычный враг → не только поушены
+        }
+        return potions;
+    }
 
 	public void OnNextRoundButtonClicked()
 	{

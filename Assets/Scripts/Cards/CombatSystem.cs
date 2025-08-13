@@ -3,11 +3,14 @@ using UnityEngine;
 
 public class CombatSystem : MonoBehaviour
 {
-	[SerializeField] private Transform adventurerParent;
+    // removed duplicate field
 	[SerializeField] private Transform dungeonParent;
 	[SerializeField] private Graveyard graveyard;
 	[SerializeField] private RoundManager roundManager;
 	[SerializeField] private GoldManager goldManager;
+	[SerializeField] private CardFactory factory;
+	[SerializeField] private Transform adventurerParent;
+	[SerializeField] private ResurrectionPanelController resurrectionPanel;
 
 	private void OnEnable()
 	{
@@ -91,6 +94,42 @@ public class CombatSystem : MonoBehaviour
 		else
 		{
 			KillSingle(target);
+		}
+
+		// Если на столе есть хотя бы 1 зелье — пьём все сразу и открываем панель воскрешения
+		TryDrinkAllPotions(attacker);
+	}
+
+	private void TryDrinkAllPotions(CardDefinition usingAdventurer)
+	{
+		if (dungeonParent == null) return;
+		// Считаем количество зелий на поле
+		int potions = 0;
+		for (int i = 0; i < dungeonParent.childCount; i++)
+		{
+			var def = dungeonParent.GetChild(i).GetComponent<CardDefinition>();
+			if (def != null && def.dungeonData != null && def.dungeonData.cardType == DungeonCardType.Potion)
+			{
+				potions++;
+			}
+		}
+		if (potions <= 0) return;
+
+		// Уничтожаем все зелья
+		var toDestroy = new List<GameObject>();
+		for (int i = 0; i < dungeonParent.childCount; i++)
+		{
+			var child = dungeonParent.GetChild(i);
+			var def = child.GetComponent<CardDefinition>();
+			if (def != null && def.dungeonData != null && def.dungeonData.cardType == DungeonCardType.Potion)
+				toDestroy.Add(child.gameObject);
+		}
+		DestroyList(toDestroy);
+
+		// Использованный приключенец уходит на кладбище (сделает внешний код), а тут — открываем панель выбора
+		if (resurrectionPanel != null)
+		{
+			resurrectionPanel.Open(potions);
 		}
 	}
 

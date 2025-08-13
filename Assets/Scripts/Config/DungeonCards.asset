@@ -22,7 +22,6 @@ MonoBehaviour:
     tag: 
     typicalGroupSize: 0
     isInstantEffect: 0
-    spawnWeight: 0
   - id: 11
     displayName: Skeleton
     description: 
@@ -32,7 +31,6 @@ MonoBehaviour:
     tag: 
     typicalGroupSize: 0
     isInstantEffect: 0
-    spawnWeight: 0
   - id: 12
     displayName: Spirit
     description: 
@@ -42,7 +40,6 @@ MonoBehaviour:
     tag: 
     typicalGroupSize: 0
     isInstantEffect: 0
-    spawnWeight: 0
   - id: 13
     displayName: Dragon
     description: 
@@ -52,7 +49,6 @@ MonoBehaviour:
     tag: 
     typicalGroupSize: 0
     isInstantEffect: 0
-    spawnWeight: 0
   - id: 14
     displayName: Chest
     description: 
@@ -62,14 +58,12 @@ MonoBehaviour:
     tag: 
     typicalGroupSize: 0
     isInstantEffect: 0
-    spawnWeight: 0
-  - id: 14
-    displayName: Chest
+  - id: 15
+    displayName: Potion
     description: 
-    icon: {fileID: 21300000, guid: 8e04c61e8c0d45649b17a3de55f325f4, type: 3}
+    icon: {fileID: 21300000, guid: fbeb1743d5222bb45ae162e484599c9f, type: 3}
     background: {fileID: 21300000, guid: 2ecc37dc4e9bdc840ac01174c698e109, type: 3}
-    cardType: 5
+    cardType: 6
     tag: 
     typicalGroupSize: 0
     isInstantEffect: 0
-    spawnWeight: 0
