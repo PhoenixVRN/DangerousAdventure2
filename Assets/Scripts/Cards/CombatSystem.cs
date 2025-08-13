@@ -7,6 +7,7 @@ public class CombatSystem : MonoBehaviour
 	[SerializeField] private Transform dungeonParent;
 	[SerializeField] private Graveyard graveyard;
 	[SerializeField] private RoundManager roundManager;
+	[SerializeField] private GoldManager goldManager;
 
 	private void OnEnable()
 	{
@@ -44,6 +45,13 @@ public class CombatSystem : MonoBehaviour
 					Debug.Log("[Combat] Chest is locked until all non-dragon enemies are cleared.");
 					return;
 				}
+			}
+			// Если цель сундук — начисляем награду (round * 1.5), затем выполняем разрушение
+			if (def.dungeonData != null && def.dungeonData.cardType == DungeonCardType.Chest)
+			{
+				int baseValue = Mathf.Max(1, roundManager != null ? roundManager.CurrentRound : 1);
+				int reward = Mathf.RoundToInt(baseValue * 1.5f);
+				goldManager?.AddGold(reward);
 			}
 			ResolveAttack(attacker, def);
 			SendAdventurerToGraveyard(selected);

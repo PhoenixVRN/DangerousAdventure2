@@ -9,6 +9,7 @@ public class RoundManager : MonoBehaviour
 	[SerializeField] private int startingAdventurers = 7;
 	[SerializeField] private TMP_Text roundText;
 	[SerializeField] private Button nextRoundButton;
+	[SerializeField] private GoldManager goldManager;
 
 	private bool roundCleared = false;
 
@@ -109,6 +110,8 @@ public class RoundManager : MonoBehaviour
 	{
 		if (!roundCleared)
 			return;
+        // Награда за пройденный раунд: +CurrentRound золота
+        goldManager?.AddGold(CurrentRound);
 		StartRound(CurrentRound + 1);
 		roundCleared = false;
 		SetNextRoundButton(false);
@@ -118,13 +121,15 @@ public class RoundManager : MonoBehaviour
 	{
 		if (nextRoundButton == null)
 			return;
-        nextRoundButton.gameObject.SetActive(true);
+        nextRoundButton.gameObject.SetActive(enabled);
         nextRoundButton.interactable = enabled;
         var cg = nextRoundButton.GetComponent<CanvasGroup>();
-        if (cg == null) cg = nextRoundButton.gameObject.AddComponent<CanvasGroup>();
-        cg.alpha = enabled ? 1f : 0.2f;
-        cg.blocksRaycasts = enabled;
-        cg.interactable = enabled;
+        if (cg != null)
+        {
+            cg.alpha = 1f;
+            cg.blocksRaycasts = enabled;
+            cg.interactable = enabled;
+        }
 	}
 }
 
