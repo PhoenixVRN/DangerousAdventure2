@@ -34,7 +34,8 @@ public class RoundManager : MonoBehaviour
         int safety = 0;
         while (safety++ < 20)
         {
-            dealer.DealDungeonExact(CurrentRound, clear: true);
+            int dungeonCount = GetDungeonCountForRound(CurrentRound);
+            dealer.DealDungeonExact(dungeonCount, clear: true);
             RefreshUI();
             if (HasAnyActiveEnemies())
             {
@@ -197,6 +198,13 @@ public class RoundManager : MonoBehaviour
             cg.interactable = enabled;
         }
 	}
+
+    private int GetDungeonCountForRound(int round)
+    {
+        // 1→1, 2→2, ..., 7→7, 8→7, 9→7, 10→7
+        if (round <= 7) return Mathf.Max(1, round);
+        return 7;
+    }
 }
 
 
