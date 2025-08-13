@@ -6,6 +6,7 @@ public class CombatSystem : MonoBehaviour
 	[SerializeField] private Transform adventurerParent;
 	[SerializeField] private Transform dungeonParent;
 	[SerializeField] private Graveyard graveyard;
+	[SerializeField] private RoundManager roundManager;
 
 	private void OnEnable()
 	{
@@ -47,6 +48,11 @@ public class CombatSystem : MonoBehaviour
 			ResolveAttack(attacker, def);
 			SendAdventurerToGraveyard(selected);
 			selected.ForceDeselect(true);
+			// Сообщаем RoundManager'у после уничтожения объектов, на следующий кадр
+			if (roundManager != null)
+			{
+				StartCoroutine(NotifyClearedNextFrame());
+			}
 		}
 	}
 
@@ -142,6 +148,12 @@ public class CombatSystem : MonoBehaviour
 		{
 			DestroyOne(list[i]);
 		}
+	}
+
+	private System.Collections.IEnumerator NotifyClearedNextFrame()
+	{
+		yield return null; // дождаться конца кадра, чтобы Destroy() применился
+		roundManager?.OnEnemyCleared();
 	}
 }
 

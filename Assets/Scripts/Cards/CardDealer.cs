@@ -84,6 +84,45 @@ public class CardDealer : MonoBehaviour
 		}
 	}
 
+	public void DealAdventurersExact(int count, bool clear)
+	{
+		if (factory == null || adventurerCards == null)
+			return;
+		if (clear) ClearChildren(GetAdventurerParent());
+		for (int i = 0; i < count; i++)
+		{
+			var a = WeightedPick(adventurerCards.cards);
+			if (a != null) factory.SpawnAdventurer(a.id);
+		}
+	}
+
+	public void DealDungeonExact(int count, bool clear)
+	{
+		if (factory == null || dungeonCards == null)
+			return;
+		if (clear) ClearChildren(GetDungeonParent());
+		int dragons = 0;
+		for (int i = 0; i < count; i++)
+		{
+			var d = WeightedPick(dungeonCards.cards);
+			if (d == null) continue;
+			if (d.cardType == DungeonCardType.Dragon && dragonParent != null)
+			{
+				factory.SpawnDungeon(d.id, dragonParent);
+				dragons++;
+			}
+			else
+			{
+				factory.SpawnDungeon(d.id);
+			}
+		}
+		if (dragonCounter != null)
+		{
+			dragonCounter.ResetCount();
+			for (int i = 0; i < dragons; i++) dragonCounter.Increment();
+		}
+	}
+
 	private Transform GetAdventurerParent()
 	{
 		var type = factory.GetType();
