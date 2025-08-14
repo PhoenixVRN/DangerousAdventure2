@@ -42,6 +42,13 @@ public class CardInteraction : MonoBehaviour, IPointerClickHandler
 				{
 					return;
 				}
+				// Повторное нажатие по свитку отменяет режим реролла и возвращает размеры
+				if (RerollController.IsActive)
+				{
+					RerollController.CancelByClickingScroll();
+					CardClicked?.Invoke(this);
+					return;
+				}
 			}
 
 			// Если активен режим свитка — выбор/снятие выбора этой карты для реролла

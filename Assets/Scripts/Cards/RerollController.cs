@@ -91,6 +91,24 @@ public class RerollController : MonoBehaviour
 		UpdateRerollButton();
 	}
 
+	public static void CancelByClickingScroll()
+	{
+		if (!IsActive)
+			return;
+		var inst = Instance;
+		var scroll = inst != null ? inst._currentScroll : null;
+		// Вернём визуалы выбранных карт
+		inst?.ClearVisuals();
+		// Снимем выделение со свитка (вернёт масштаб)
+		if (scroll != null)
+		{
+			var interact = scroll.GetComponent<CardInteraction>();
+			if (interact != null) interact.ForceDeselect(true);
+		}
+		// Выйдем из режима реролла
+		inst?.ExitMode();
+	}
+
 	public static void ToggleSelection(CardDefinition def)
 	{
 		if (!IsActive || def == null)

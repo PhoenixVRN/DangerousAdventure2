@@ -73,14 +73,10 @@ public class CardDealer : MonoBehaviour
 			}
 		}
 		if (dragonCounter != null)
-			dragonCounter.ResetCount();
-		if (dragonCounter != null)
-			dragonCounter.Increment(); // set at least once, then add (below)
-		if (dragonCounter != null)
 		{
-			// корректно выставим итоговое значение
-			dragonCounter.CurrentCount.ToString(); // noop to avoid warning
-			for (int i = 1; i < dragons; i++) dragonCounter.Increment();
+			dragonCounter.ResetCount();
+			int totalDragons = dragonParent != null ? dragonParent.childCount : dragons;
+			for (int i = 0; i < totalDragons; i++) dragonCounter.Increment();
 		}
 	}
 
@@ -119,7 +115,8 @@ public class CardDealer : MonoBehaviour
 		if (dragonCounter != null)
 		{
 			dragonCounter.ResetCount();
-			for (int i = 0; i < dragons; i++) dragonCounter.Increment();
+			int totalDragons = dragonParent != null ? dragonParent.childCount : dragons;
+			for (int i = 0; i < totalDragons; i++) dragonCounter.Increment();
 		}
 	}
 

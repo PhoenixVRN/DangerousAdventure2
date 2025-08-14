@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cards:
   - id: 10
-    displayName: Goblin
+    displayName: "\u0413\u043E\u0431\u043B\u0438\u043D"
     description: 
     icon: {fileID: 21300000, guid: fb4c5dec52f42d44083084167e3990eb, type: 3}
     background: {fileID: 21300000, guid: 2ecc37dc4e9bdc840ac01174c698e109, type: 3}
@@ -23,7 +23,7 @@ MonoBehaviour:
     typicalGroupSize: 0
     isInstantEffect: 0
   - id: 11
-    displayName: Skeleton
+    displayName: "\u0421\u043A\u0435\u043B\u0435\u0442"
     description: 
     icon: {fileID: 21300000, guid: 012c06dfceb8fe049b0671b17cea2428, type: 3}
     background: {fileID: 21300000, guid: 2ecc37dc4e9bdc840ac01174c698e109, type: 3}
@@ -32,7 +32,7 @@ MonoBehaviour:
     typicalGroupSize: 0
     isInstantEffect: 0
   - id: 12
-    displayName: Spirit
+    displayName: "\u0414\u0443\u0445"
     description: 
     icon: {fileID: 21300000, guid: 2e30b34bba4a87e49942f46ceb162bd3, type: 3}
     background: {fileID: 21300000, guid: 2ecc37dc4e9bdc840ac01174c698e109, type: 3}
@@ -41,7 +41,7 @@ MonoBehaviour:
     typicalGroupSize: 0
     isInstantEffect: 0
   - id: 13
-    displayName: Dragon
+    displayName: "\u0414\u0440\u0430\u043A\u043E\u043D"
     description: 
     icon: {fileID: 21300000, guid: 7e32f61c55043474e848bd46af7f6d8b, type: 3}
     background: {fileID: 21300000, guid: 2ecc37dc4e9bdc840ac01174c698e109, type: 3}
@@ -50,7 +50,7 @@ MonoBehaviour:
     typicalGroupSize: 0
     isInstantEffect: 0
   - id: 14
-    displayName: Chest
+    displayName: "\u0421\u0443\u043D\u0434\u0443\u043A"
     description: 
     icon: {fileID: 21300000, guid: 8e04c61e8c0d45649b17a3de55f325f4, type: 3}
     background: {fileID: 21300000, guid: 2ecc37dc4e9bdc840ac01174c698e109, type: 3}
@@ -59,7 +59,7 @@ MonoBehaviour:
     typicalGroupSize: 0
     isInstantEffect: 0
   - id: 15
-    displayName: Potion
+    displayName: "\u0417\u0435\u043B\u044C\u0435"
     description: 
     icon: {fileID: 21300000, guid: fbeb1743d5222bb45ae162e484599c9f, type: 3}
     background: {fileID: 21300000, guid: 2ecc37dc4e9bdc840ac01174c698e109, type: 3}
