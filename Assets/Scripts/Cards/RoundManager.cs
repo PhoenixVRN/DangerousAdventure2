@@ -30,45 +30,49 @@ public class RoundManager : MonoBehaviour
         {
             dealer.DealAdventurersExact(startingAdventurers, clear: true);
         }
-        // Диллим врагов и если выпали только драконы — переходим к следующему раунду.
-        int safety = 0;
-        while (safety++ < 20)
+
+        // Делаем одну раздачу для текущего раунда
+        int dungeonCount = GetDungeonCountForRound(CurrentRound);
+        dealer.DealDungeonExact(dungeonCount, clear: true);
+        RefreshUI();
+
+        // Если есть обычные враги — играем этот раунд (кнопку не показываем)
+        if (HasAnyActiveEnemies())
         {
-            int dungeonCount = GetDungeonCountForRound(CurrentRound);
-            dealer.DealDungeonExact(dungeonCount, clear: true);
-            RefreshUI();
-            if (HasAnyActiveEnemies())
-            {
-                // есть обычные враги — играем этот раунд
-                break;
-            }
-            // если есть сундуки и нет обычных врагов — даём выбор (кнопка Next Round)
-            if (HasAnyChests())
-            {
-                roundCleared = true;
-                SetNextRoundButton(true);
-                break;
-            }
-            // Спец-правило для 1-го раунда: если выпали только драконы (и нет обычных врагов/сундуков), даём кнопку Next Round
-            if (CurrentRound == 1 && HasAnyDragons())
-            {
-                roundCleared = true;
-                SetNextRoundButton(true);
-                break;
-            }
-            // если остались только поушены —
-            // • в любом раунде при ровно 1 поушене — даём кнопку
-            // • в 1-м раунде при >=1 поушене — тоже даём кнопку
-            int potionsOnly = PotionsOnlyCount();
-            if ((CurrentRound == 1 && potionsOnly >= 1) || potionsOnly == 1)
-            {
-                roundCleared = true;
-                SetNextRoundButton(true);
-                break;
-            }
-            // если только драконы или никого — следующий раунд
-            CurrentRound++;
+            return;
         }
+
+        // Если есть сундуки и нет обычных врагов — даём кнопку Next Round
+        if (HasAnyChests())
+        {
+            roundCleared = true;
+            SetNextRoundButton(true);
+            return;
+        }
+
+        // Спец-правило для 1-го раунда: если выпали только драконы — даём кнопку Next Round
+        if (CurrentRound == 1 && HasAnyDragons())
+        {
+            roundCleared = true;
+            SetNextRoundButton(true);
+            return;
+        }
+
+        // Если остались только поушены —
+        // • в любом раунде при ровно 1 поушене — даём кнопку
+        // • в 1-м раунде при >=1 поушене — тоже даём кнопку
+        int potionsOnly = PotionsOnlyCount();
+        if ((CurrentRound == 1 && potionsOnly >= 1) || potionsOnly == 1)
+        {
+            roundCleared = true;
+            SetNextRoundButton(true);
+            return;
+        }
+
+        // Остальные случаи (только драконы/пусто/много поушенов в поздних раундах):
+        // не перелистываем автоматически, а даём кнопку Next Round, чтобы игрок сам решил
+        roundCleared = true;
+        SetNextRoundButton(true);
     }
 
 	public void OnEnemyCleared()
@@ -118,7 +122,8 @@ public class RoundManager : MonoBehaviour
 			var def = parent.GetChild(i).GetComponent<CardDefinition>();
 			if (def == null || def.dungeonData == null) continue;
 			var t = def.dungeonData.cardType;
-			if (t != DungeonCardType.Dragon && t != DungeonCardType.Chest)
+			// Поушены не считаем активными врагами
+			if (t != DungeonCardType.Dragon && t != DungeonCardType.Chest && t != DungeonCardType.Potion)
 				return true;
 		}
 		return false;

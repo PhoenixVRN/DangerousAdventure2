@@ -96,8 +96,11 @@ public class CombatSystem : MonoBehaviour
 			KillSingle(target);
 		}
 
-		// Если на столе есть хотя бы 1 зелье — пьём все сразу и открываем панель воскрешения
-		TryDrinkAllPotions(attacker);
+		// Пьём зелья ТОЛЬКО если целью был поушен
+		if (d.cardType == DungeonCardType.Potion)
+		{
+			TryDrinkAllPotions(attacker);
+		}
 	}
 
 	private void TryDrinkAllPotions(CardDefinition usingAdventurer)
@@ -144,7 +147,8 @@ public class CombatSystem : MonoBehaviour
 			if (def == null || def.dungeonData == null)
 				continue;
 			var t = def.dungeonData.cardType;
-			if (t != DungeonCardType.Chest && t != DungeonCardType.Dragon)
+			// Поушены не блокируют сундук
+			if (t != DungeonCardType.Chest && t != DungeonCardType.Dragon && t != DungeonCardType.Potion)
 				return true;
 		}
 		return false;

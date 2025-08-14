@@ -90,6 +90,11 @@ public class CardInteraction : MonoBehaviour, IPointerClickHandler
 			}
 			transform.localScale = _baseScale;
 		}
+		// Сообщаем подписчикам (например, CardInfoPopup), что авантюрист дизелектнут — попап закроется
+		if (_definition != null && _definition.kind == CardKind.Adventurer)
+		{
+			AdventurerSelected?.Invoke(_definition, false);
+		}
 	}
 
 	private void StartTweenScale(Vector3 targetScale)
