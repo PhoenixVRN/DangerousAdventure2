@@ -12,6 +12,7 @@ public class RerollController : MonoBehaviour
 	[SerializeField] private DungeonCardsConfig dungeonConfig;
 	[SerializeField] private CardDealer dealer; // для dragonParent
 	[SerializeField] private Graveyard graveyard; // куда отправляем использованный свиток
+	[SerializeField] private RoundManager roundManager; // чтобы переоценить состояние после реролла
 
 	private readonly HashSet<CardDefinition> _selectedForReroll = new HashSet<CardDefinition>();
 	private readonly Dictionary<Transform, Vector3> _originalScales = new Dictionary<Transform, Vector3>();
@@ -25,6 +26,10 @@ public class RerollController : MonoBehaviour
 	private void OnEnable()
 	{
 		CardInteraction.AdventurerSelected += OnAdventurerSelected;
+		if (GameManager.Instance != null)
+		{
+			GameManager.Instance.OnStateChanged += OnStateChanged;
+		}
 		if (rerollButton != null) rerollButton.gameObject.SetActive(false);
 		UpdateRerollButton();
 	}
@@ -32,7 +37,21 @@ public class RerollController : MonoBehaviour
 	private void OnDisable()
 	{
 		CardInteraction.AdventurerSelected -= OnAdventurerSelected;
+		if (GameManager.Instance != null)
+		{
+			GameManager.Instance.OnStateChanged -= OnStateChanged;
+		}
 		if (Instance == this) Instance = null;
+	}
+
+	private void OnStateChanged(GameManager.GameState previous, GameManager.GameState next)
+	{
+		if (next == GameManager.GameState.DragonBattle)
+		{
+			// Принудительно выходим из режима свитка при входе в бой с драконами
+			ExitMode();
+			if (rerollButton != null) rerollButton.gameObject.SetActive(false);
+		}
 	}
 
 	public static bool IsActive => Instance != null && Instance._currentScroll != null;
@@ -153,6 +172,8 @@ public class RerollController : MonoBehaviour
 		}
 		// Сбросить режим и UI
 		ExitMode();
+		// Переоценить состояние стола (покажет Next Round при сундуках/поушенах)
+		roundManager?.OnEnemyCleared();
 	}
 
 	private void RerollOne(CardDefinition def)

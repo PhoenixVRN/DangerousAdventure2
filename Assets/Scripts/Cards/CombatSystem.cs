@@ -12,14 +12,33 @@ public class CombatSystem : MonoBehaviour
 	[SerializeField] private Transform adventurerParent;
 	[SerializeField] private ResurrectionPanelController resurrectionPanel;
 
+	// Запоминаем какие классы уже убивали драконов в текущей битве с драконами
+	private readonly HashSet<AdventurerClass> _dragonKillersUsed = new HashSet<AdventurerClass>();
+
 	private void OnEnable()
 	{
 		CardInteraction.CardClicked += OnCardClicked;
+		if (GameManager.Instance != null)
+			GameManager.Instance.OnStateChanged += OnGameStateChanged;
 	}
 
 	private void OnDisable()
 	{
 		CardInteraction.CardClicked -= OnCardClicked;
+		if (GameManager.Instance != null)
+			GameManager.Instance.OnStateChanged -= OnGameStateChanged;
+	}
+
+	private void OnGameStateChanged(GameManager.GameState previous, GameManager.GameState next)
+	{
+		if (next == GameManager.GameState.DragonBattle)
+		{
+			_dragonKillersUsed.Clear();
+		}
+		else if (previous == GameManager.GameState.DragonBattle && next != GameManager.GameState.DragonBattle)
+		{
+			_dragonKillersUsed.Clear();
+		}
 	}
 
 	private void OnCardClicked(CardInteraction interaction)
@@ -48,6 +67,20 @@ public class CombatSystem : MonoBehaviour
 				return;
 			}
 
+			// Ограничение драконов в режиме DragonBattle: каждый класс может убить только одного дракона
+			if (def.dungeonData != null && def.dungeonData.cardType == DungeonCardType.Dragon)
+			{
+				if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameManager.GameState.DragonBattle)
+				{
+					var cls = attacker.adventurerData != null ? attacker.adventurerData.adventurerClass : AdventurerClass.Warrior;
+					if (_dragonKillersUsed.Contains(cls))
+					{
+						Debug.Log($"[Combat] DragonBattle rule: class {cls} already used to kill a dragon.");
+						return;
+					}
+				}
+			}
+
 			// Блокируем атаку сундуков, если на поле есть другие враги (кроме драконов)
 			if (def.dungeonData != null && def.dungeonData.cardType == DungeonCardType.Chest)
 			{
@@ -64,9 +97,15 @@ public class CombatSystem : MonoBehaviour
 				int reward = Mathf.RoundToInt(baseValue * 1.5f);
 				goldManager?.AddGold(reward);
 			}
+			bool targetIsDragon = def.dungeonData != null && def.dungeonData.cardType == DungeonCardType.Dragon;
+			var usedClass = attacker.adventurerData != null ? attacker.adventurerData.adventurerClass : AdventurerClass.Warrior;
 			ResolveAttack(attacker, def);
 			SendAdventurerToGraveyard(selected);
 			selected.ForceDeselect(true);
+			if (targetIsDragon && GameManager.Instance != null && GameManager.Instance.CurrentState == GameManager.GameState.DragonBattle)
+			{
+				_dragonKillersUsed.Add(usedClass);
+			}
 			// Сообщаем RoundManager'у после уничтожения объектов, на следующий кадр
 			if (roundManager != null)
 			{

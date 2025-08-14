@@ -36,52 +36,114 @@ public class RoundManager : MonoBehaviour
         dealer.DealDungeonExact(dungeonCount, clear: true);
         RefreshUI();
 
+        // Если накопилось 3+ драконов — входим в режим боя с драконами
+        if (TryEnterDragonBattle())
+        {
+            return;
+        }
+
         // Если есть обычные враги — играем этот раунд (кнопку не показываем)
         if (HasAnyActiveEnemies())
         {
             return;
         }
-
-        // Если есть сундуки и нет обычных врагов — даём кнопку Next Round
-        if (HasAnyChests())
-        {
-            roundCleared = true;
-            SetNextRoundButton(true);
-            return;
-        }
-
-        // Спец-правило для 1-го раунда: если выпали только драконы — даём кнопку Next Round
-        if (CurrentRound == 1 && HasAnyDragons())
-        {
-            roundCleared = true;
-            SetNextRoundButton(true);
-            return;
-        }
-
-        // Если остались только поушены —
-        // • в любом раунде при ровно 1 поушене — даём кнопку
-        // • в 1-м раунде при >=1 поушене — тоже даём кнопку
-        int potionsOnly = PotionsOnlyCount();
-        if ((CurrentRound == 1 && potionsOnly >= 1) || potionsOnly == 1)
-        {
-            roundCleared = true;
-            SetNextRoundButton(true);
-            return;
-        }
-
-        // Остальные случаи (только драконы/пусто/много поушенов в поздних раундах):
-        // не перелистываем автоматически, а даём кнопку Next Round, чтобы игрок сам решил
+        // Нет обычных врагов — сразу даём кнопку Next Round (независимо от того, сундуки это, поушены или драконы отдельно)
         roundCleared = true;
         SetNextRoundButton(true);
+        return;
+
+    }
+
+    public bool TryEnterDragonBattle()
+    {
+        var dealerField = typeof(CardDealer).GetField("dragonParent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var dragonParent = dealerField != null ? (Transform)dealerField.GetValue(dealer) : null;
+        if (dragonParent == null)
+            return false;
+        if (dragonParent.childCount < 3)
+            return false;
+
+        // Переключаем состояние игры → фон сменится через BackgroundStateImage
+        GameManager.Instance?.StartDragonBattle();
+
+        // Очищаем поле врагов
+        var dungeonField = typeof(CombatSystem).GetField("dungeonParent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        var dungeonParent = dungeonField != null ? (Transform)dungeonField.GetValue(combat) : null;
+        if (dungeonParent != null)
+        {
+            for (int i = dungeonParent.childCount - 1; i >= 0; i--)
+            {
+                var child = dungeonParent.GetChild(i);
+                if (Application.isPlaying) Destroy(child.gameObject); else DestroyImmediate(child.gameObject);
+            }
+        }
+
+        // Переносим всех драконов на поле врагов
+        if (dungeonParent != null)
+        {
+            var toMove = new System.Collections.Generic.List<Transform>();
+            for (int i = 0; i < dragonParent.childCount; i++)
+            {
+                toMove.Add(dragonParent.GetChild(i));
+            }
+            for (int i = 0; i < toMove.Count; i++)
+            {
+                toMove[i].SetParent(dungeonParent, worldPositionStays: false);
+            }
+        }
+
+        roundCleared = false;
+        SetNextRoundButton(false);
+        RefreshUI();
+        return true;
     }
 
 	public void OnEnemyCleared()
 	{
+		// Сначала проверяем вход в режим драконьей битвы (например, после реролла)
+		if (TryEnterDragonBattle())
+			return;
 		// Проверяем: остались ли враги (кроме драконов и сундуков)
 		if (combat == null) return;
+		// Исключение: если открыта панель воскрешения — не уходим в таверну и не показываем переходы автоматически
+		var resPanelField = typeof(CombatSystem).GetField("resurrectionPanel", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+		var resPanel = resPanelField != null ? (ResurrectionPanelController)resPanelField.GetValue(combat) : null;
+		if (resPanel != null && resPanel.IsOpen)
+		{
+			return;
+		}
+		// Если в обычном бою закончились герои — уходим в таверну
+		if (GameManager.Instance != null && GameManager.Instance.CurrentState != GameManager.GameState.DragonBattle)
+		{
+			var dealerType = typeof(CardDealer);
+			var factoryField = dealerType.GetField("factory", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+			var factory = factoryField != null ? (CardFactory)factoryField.GetValue(dealer) : null;
+			Transform adventurerParent = null;
+			if (factory != null)
+			{
+				var fType = typeof(CardFactory);
+				var advField = fType.GetField("adventurerParent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+				adventurerParent = advField != null ? (Transform)advField.GetValue(factory) : null;
+			}
+			if (adventurerParent != null && adventurerParent.childCount == 0)
+			{
+				roundCleared = false;
+				SetNextRoundButton(false);
+				GameManager.Instance.EnterTavern();
+				return;
+			}
+		}
 		var cleared = !HasAnyActiveEnemies();
         if (cleared)
         {
+			// Если это был режим боя с драконами — после победы уходим в таверну
+			if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameManager.GameState.DragonBattle)
+			{
+				roundCleared = false;
+				SetNextRoundButton(false);
+				GameManager.Instance.EnterTavern();
+				return;
+			}
             if (!roundCleared)
             {
                 roundCleared = true;
@@ -111,16 +173,31 @@ public class RoundManager : MonoBehaviour
         }
 	}
 
-	private bool HasAnyActiveEnemies()
+    private bool HasAnyActiveEnemies()
 	{
 		// Используем CombatSystem.dungeonParent
 		var parentField = typeof(CombatSystem).GetField("dungeonParent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 		var parent = parentField != null ? (Transform)parentField.GetValue(combat) : null;
 		if (parent == null) return false;
+        // В режиме битвы с драконами считаем их активными врагами
+        if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameManager.GameState.DragonBattle)
+        {
+            for (int i = 0; i < parent.childCount; i++)
+            {
+                var def = parent.GetChild(i).GetComponent<CardDefinition>();
+                if (def == null || def.dungeonData == null) continue;
+                if (def.dungeonData.cardType == DungeonCardType.Dragon)
+                    return true;
+            }
+            return false;
+        }
 		for (int i = 0; i < parent.childCount; i++)
 		{
 			var def = parent.GetChild(i).GetComponent<CardDefinition>();
 			if (def == null || def.dungeonData == null) continue;
+			// Любые instant-эффекты не считаем активными врагами (например, поушены)
+			if (def.dungeonData.isInstantEffect)
+				continue;
 			var t = def.dungeonData.cardType;
 			// Поушены не считаем активными врагами
 			if (t != DungeonCardType.Dragon && t != DungeonCardType.Chest && t != DungeonCardType.Potion)
@@ -170,7 +247,7 @@ public class RoundManager : MonoBehaviour
             var def = parent.GetChild(i).GetComponent<CardDefinition>();
             if (def == null || def.dungeonData == null) continue;
             var t = def.dungeonData.cardType;
-            if (t == DungeonCardType.Potion)
+			if (t == DungeonCardType.Potion || def.dungeonData.isInstantEffect)
                 potions++;
             else if (t != DungeonCardType.Dragon)
                 return 0; // найден сундук или обычный враг → не только поушены

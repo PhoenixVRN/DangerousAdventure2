@@ -35,6 +35,15 @@ public class CardInteraction : MonoBehaviour, IPointerClickHandler
 			return;
 		if (_definition.kind == CardKind.Adventurer)
 		{
+			// Свиток неактивен в режиме битвы с драконами
+			if (_definition.adventurerData != null && _definition.adventurerData.adventurerClass == AdventurerClass.Scroll)
+			{
+				if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameManager.GameState.DragonBattle)
+				{
+					return;
+				}
+			}
+
 			// Если активен режим свитка — выбор/снятие выбора этой карты для реролла
 			if (RerollController.IsActive)
 			{

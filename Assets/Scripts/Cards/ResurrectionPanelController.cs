@@ -24,12 +24,15 @@ public class ResurrectionPanelController : MonoBehaviour
 	private readonly List<string> _reservedIds = new List<string>();
 	private readonly List<GameObject> _previewCards = new List<GameObject>();
 
+	public bool IsOpen { get; private set; } = false;
+
 	public void Open(int resurrectCount)
 	{
 		remaining = Mathf.Max(0, resurrectCount);
 		Debug.Log($"[ResurrectionPanel] Open with count={remaining}");
 		RefreshCounter();
 		if (panelRoot != null) panelRoot.SetActive(true);
+		IsOpen = true;
 		ClearPreviews();
 		_reservedIds.Clear();
 		HookButtons(true);
@@ -40,6 +43,7 @@ public class ResurrectionPanelController : MonoBehaviour
 		Debug.Log("[ResurrectionPanel] Close panel");
 		HookButtons(false);
 		if (panelRoot != null) panelRoot.SetActive(false);
+		IsOpen = false;
 	}
 
 	private void HookButtons(bool hook)
