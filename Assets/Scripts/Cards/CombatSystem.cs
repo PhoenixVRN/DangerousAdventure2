@@ -40,6 +40,14 @@ public class CombatSystem : MonoBehaviour
 			if (attacker == null || attacker.kind != CardKind.Adventurer)
 				return;
 
+			// Если активирован режим свитка — позволяем выбирать СВОИХ или ВРАГОВ (кроме драконов)
+			if (RerollController.IsActive)
+			{
+				RerollController.ToggleSelection(def);
+				// Принудительно держим выделение свитка, чтобы не закрывался попап
+				return;
+			}
+
 			// Блокируем атаку сундуков, если на поле есть другие враги (кроме драконов)
 			if (def.dungeonData != null && def.dungeonData.cardType == DungeonCardType.Chest)
 			{

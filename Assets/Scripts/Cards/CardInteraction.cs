@@ -35,6 +35,13 @@ public class CardInteraction : MonoBehaviour, IPointerClickHandler
 			return;
 		if (_definition.kind == CardKind.Adventurer)
 		{
+			// Если активен режим свитка — выбор/снятие выбора этой карты для реролла
+			if (RerollController.IsActive)
+			{
+				RerollController.ToggleSelection(_definition);
+				CardClicked?.Invoke(this);
+				return;
+			}
 			if (_currentlySelected != null && _currentlySelected != this)
 			{
 				_currentlySelected.ForceDeselect(true);
@@ -50,7 +57,7 @@ public class CardInteraction : MonoBehaviour, IPointerClickHandler
 		}
 		else
 		{
-			// Dungeon card clicked — сообщаем системе боя
+			// Dungeon card clicked — либо боёвка, либо выбор для реролла (если активен свиток)
 		}
 		CardClicked?.Invoke(this);
 	}
