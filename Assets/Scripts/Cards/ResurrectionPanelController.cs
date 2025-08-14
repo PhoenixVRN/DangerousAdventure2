@@ -19,6 +19,7 @@ public class ResurrectionPanelController : MonoBehaviour
 	[SerializeField] private CardFactory factory;
 	[SerializeField] private Transform adventurerParent;
 	[SerializeField] private Transform previewsParent;
+	[SerializeField] private RoundManager roundManager;
 
 	private int remaining = 0;
 	private readonly List<string> _reservedIds = new List<string>();
@@ -44,6 +45,8 @@ public class ResurrectionPanelController : MonoBehaviour
 		HookButtons(false);
 		if (panelRoot != null) panelRoot.SetActive(false);
 		IsOpen = false;
+		// После закрытия панели — переоценим состояние поля (например, остался только сундук)
+		roundManager?.OnEnemyCleared();
 	}
 
 	private void HookButtons(bool hook)

@@ -114,6 +114,49 @@ public class CombatSystem : MonoBehaviour
 		}
 	}
 
+	private void Update()
+	{
+		// Условие поражения в режиме боя с драконами: героев не осталось (кроме Свитка), а драконы ещё есть
+		if (GameManager.Instance != null && GameManager.Instance.CurrentState == GameManager.GameState.DragonBattle)
+		{
+			var adventurersLeft = CountAdventurersExcludingScroll();
+			bool dragonsRemain = AnyDragonsOnField();
+			if (adventurersLeft == 0 && dragonsRemain)
+			{
+				GameManager.Instance.EnterTavern();
+				// показать тост "вы проиграли" на 3 секунды
+				ToastController.Instance?.Show("Вы проиграли", 3f);
+			}
+		}
+	}
+
+	private int CountAdventurersExcludingScroll()
+	{
+		if (adventurerParent == null) return 0;
+		int count = 0;
+		for (int i = 0; i < adventurerParent.childCount; i++)
+		{
+			var def = adventurerParent.GetChild(i).GetComponent<CardDefinition>();
+			if (def == null || def.adventurerData == null) continue;
+			if (def.adventurerData.adventurerClass == AdventurerClass.Scroll) continue;
+			count++;
+		}
+		return count;
+	}
+
+	private bool AnyDragonsOnField()
+	{
+		if (dungeonParent == null) return false;
+		for (int i = 0; i < dungeonParent.childCount; i++)
+		{
+			var def = dungeonParent.GetChild(i).GetComponent<CardDefinition>();
+			if (def == null || def.dungeonData == null) continue;
+			if (def.dungeonData.cardType == DungeonCardType.Dragon)
+				return true;
+		}
+		return false;
+	}
+
 	private void ResolveAttack(CardDefinition attacker, CardDefinition target)
 	{
 		var a = attacker.adventurerData;

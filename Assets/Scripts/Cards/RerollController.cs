@@ -225,6 +225,20 @@ public class RerollController : MonoBehaviour
 				var go = factory.SpawnDungeon(entry.id, targetParent);
 				if (go != null && targetParent == parent)
 					go.transform.SetSiblingIndex(siblingIndex);
+				// После реролла в дракона — пересчитать счётчик драконов
+				if (entry.cardType == DungeonCardType.Dragon && dealer != null)
+				{
+					var parentField = typeof(CardDealer).GetField("dragonParent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+					var counterField = typeof(CardDealer).GetField("dragonCounter", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+					var dParent = parentField != null ? (Transform)parentField.GetValue(dealer) : null;
+					var dCounter = counterField != null ? (DragonCounter)counterField.GetValue(dealer) : null;
+					if (dCounter != null)
+					{
+						dCounter.ResetCount();
+						int total = dParent != null ? dParent.childCount : 0;
+						for (int i = 0; i < total; i++) dCounter.Increment();
+					}
+				}
 			}
 		}
 	}

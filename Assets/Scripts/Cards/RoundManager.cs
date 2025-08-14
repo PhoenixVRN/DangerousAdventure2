@@ -10,6 +10,7 @@ public class RoundManager : MonoBehaviour
 	[SerializeField] private TMP_Text roundText;
 	[SerializeField] private Button nextRoundButton;
 	[SerializeField] private GoldManager goldManager;
+	[SerializeField] private bool autoStartOnLoad = false;
 
 	private bool roundCleared = false;
 
@@ -17,7 +18,10 @@ public class RoundManager : MonoBehaviour
 
 	private void Start()
 	{
-		StartRound(1, initial: true);
+		if (autoStartOnLoad)
+		{
+			StartRound(1, initial: true);
+		}
 	}
 
     public void StartRound(int round, bool initial = false)
@@ -42,6 +46,16 @@ public class RoundManager : MonoBehaviour
             return;
         }
 
+		// Если нет обычных врагов (остались только сундуки/поушены/драконы<3) — сразу даём кнопку Next Round
+		if (ShouldAllowImmediateNextRound())
+		{
+			roundCleared = true;
+			SetNextRoundButton(true);
+            // На всякий случай — дублируем проверку на следующий кадр
+            StartCoroutine(DeferredEvaluateAfterDeal());
+			return;
+		}
+
         // Если есть обычные враги — играем этот раунд (кнопку не показываем)
         if (HasAnyActiveEnemies())
         {
@@ -50,8 +64,28 @@ public class RoundManager : MonoBehaviour
         // Нет обычных врагов — сразу даём кнопку Next Round (независимо от того, сундуки это, поушены или драконы отдельно)
         roundCleared = true;
         SetNextRoundButton(true);
+        StartCoroutine(DeferredEvaluateAfterDeal());
         return;
 
+    }
+
+    private System.Collections.IEnumerator DeferredEvaluateAfterDeal()
+    {
+        // Ждём кадр, чтобы все инстанциирования/лейауты применились, затем переоцениваем
+        yield return null;
+        if (TryEnterDragonBattle())
+            yield break;
+        if (ShouldAllowImmediateNextRound())
+        {
+            roundCleared = true;
+            SetNextRoundButton(true);
+            yield break;
+        }
+        if (!HasAnyActiveEnemies())
+        {
+            roundCleared = true;
+            SetNextRoundButton(true);
+        }
     }
 
     public bool TryEnterDragonBattle()
@@ -141,6 +175,8 @@ public class RoundManager : MonoBehaviour
 			{
 				roundCleared = false;
 				SetNextRoundButton(false);
+				// Показать уведомление о победе
+				ToastController.Instance?.Show("Вы победили!", 3f);
 				GameManager.Instance.EnterTavern();
 				return;
 			}
@@ -254,6 +290,27 @@ public class RoundManager : MonoBehaviour
         }
         return potions;
     }
+
+	private bool ShouldAllowImmediateNextRound()
+	{
+		// Разрешаем кнопку Next Round, если на столе НЕТ обычных врагов
+		// Обычный враг = любая карта подземелья, которая НЕ сундук, НЕ поушен (и не instant), и НЕ дракон.
+		var parentField = typeof(CombatSystem).GetField("dungeonParent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+		var parent = parentField != null ? (Transform)parentField.GetValue(combat) : null;
+		if (parent == null) return true; // пусто → можно переходить
+		for (int i = 0; i < parent.childCount; i++)
+		{
+			var def = parent.GetChild(i).GetComponent<CardDefinition>();
+			if (def == null || def.dungeonData == null) continue;
+			if (def.dungeonData.isInstantEffect) continue; // мгновенные эффекты не считаем врагами
+			var t = def.dungeonData.cardType;
+			if (t != DungeonCardType.Chest && t != DungeonCardType.Potion && t != DungeonCardType.Dragon)
+			{
+				return false; // найден обычный враг
+			}
+		}
+		return true;
+	}
 
 	public void OnNextRoundButtonClicked()
 	{

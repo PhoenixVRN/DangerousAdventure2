@@ -54,6 +54,16 @@ public class GameManager : MonoBehaviour
 		SetStateInternal(GameState.Boot);
 	}
 
+	private void Start()
+	{
+		// Переходим в главное меню при старте игры
+		GoToMainMenu();
+		if (startGameButton != null)
+		{
+			startGameButton.gameObject.SetActive(true);
+		}
+	}
+
 	// Публичные команды переходов. Не создают объектов и не трогают UI — только меняют состояние и счётчики.
 
 	public bool GoToMainMenu()
